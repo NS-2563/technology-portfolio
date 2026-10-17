@@ -1,26 +1,427 @@
 @import "tailwindcss";
 
+/* -------------------------------------------------------------------------
+   Field Journal — paper & ink, one cyan annotation colour
+   ------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --paper: #f4f1e8;
+  --paper-2: #ece7db;
+  --paper-3: #e2dccb;
+  --ink: #191811;
+  --ink-2: #454234;
+  --ink-3: #635e4d;
+  --rule: #d7d1c0;
+  --rule-2: #bdb69f;
+  --accent: #0b6a80;
+  --accent-2: #085365;
+  --accent-wash: rgba(11, 106, 128, 0.07);
+  --mark: #b4472c;
+  --grid: rgba(25, 24, 17, 0.05);
+  --ground: #f4f1e8;
+  --fg: #191811;
+  --on-accent: #f4f1e8;
+  --shadow: rgba(48, 40, 22, 0.16);
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --paper: #0a0c10;
+    --paper-2: #101319;
+    --paper-3: #171b22;
+    --ink: #e7e2d6;
+    --ink-2: #b3ae9f;
+    --ink-3: #938d7d;
+    --rule: #212832;
+    --rule-2: #333c48;
+    --accent: #63d6e8;
+    --accent-2: #9ce7f2;
+    --accent-wash: rgba(99, 214, 232, 0.1);
+    --mark: #d97757;
+    --grid: rgba(231, 226, 214, 0.045);
+    --ground: #0a0c10;
+    --fg: #e7e2d6;
+    --on-accent: #070a0e;
+    --shadow: rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-2: var(--rule-2);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-mark: var(--mark);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display-serif), Georgia, "Times New Roman", serif;
+}
+
+@keyframes enter-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 7rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      scroll-padding-top: 5.5rem;
+    }
+  }
+
+  body {
+    background-color: var(--ground);
+    color: var(--fg);
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :where(a, button, [tabindex]):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+}
+
+@layer components {
+  /* Ruled paper ground ------------------------------------------------ */
+  .ground {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--ground);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+
+  /* Layout ------------------------------------------------------------ */
+  .page {
+    width: 100%;
+    max-width: 76rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  .journal {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 1.5rem;
+  }
+
+  .folio {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+
+  .act {
+    position: relative;
+    padding-block: clamp(3.5rem, 7vw, 6.5rem);
+    border-top: 1px solid var(--rule);
+  }
+
+  .masthead {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* Type -------------------------------------------------------------- */
+  .display {
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.03;
+  }
+
+  .headline {
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: clamp(2.5rem, 7.4vw, 5.5rem);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  .act-title {
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: clamp(1.8rem, 3.6vw, 2.75rem);
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .entry-title {
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: clamp(1.3rem, 2.1vw, 1.75rem);
+    line-height: 1.16;
+    letter-spacing: -0.015em;
+  }
+
+  .chapter-title {
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: clamp(1.5rem, 2.7vw, 2.1rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .num {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+
+  .label {
+    font-size: 0.7rem;
+    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-3);
+  }
+
+  .meta {
+    font-size: 0.78rem;
+    line-height: 1.45;
+    letter-spacing: 0.01em;
+    color: var(--ink-3);
+  }
+
+  .note {
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-style: italic;
+    font-size: 1.0625rem;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+
+  .lede {
+    font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+
+  .prose {
+    color: var(--ink-2);
+    line-height: 1.75;
+  }
+
+  .prose > p + p {
+    margin-top: 1.1rem;
+  }
+
+  .prose strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .measure {
+    max-width: 33rem;
+  }
+
+  .measure-wide {
+    max-width: 46rem;
+  }
+
+  .drop-cap::first-letter {
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    float: left;
+    font-size: 3.4rem;
+    line-height: 0.82;
+    padding: 0.1rem 0.55rem 0 0;
+    color: var(--ink);
+  }
+
+  /* Marks, links, actions --------------------------------------------- */
+  .mark {
+    display: inline-block;
+    width: 0.4rem;
+    height: 0.4rem;
+    background: var(--accent);
+    flex: none;
+  }
+
+  .mark-idle {
+    background: var(--rule-2);
+  }
+
+  .mark-caveat {
+    background: var(--mark);
+  }
+
+  .tlink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 600;
+    color: var(--ink);
+    border-bottom: 1px solid var(--rule-2);
+    padding-bottom: 0.1rem;
+    transition:
+      color 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  .tlink:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 0.8rem 1.3rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .action:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .action-quiet {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--rule-2);
+  }
+
+  .action-quiet:hover {
+    background: var(--accent-wash);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Diagram primitives ------------------------------------------------ */
+  .rule-x {
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .rail-node {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    background: var(--paper);
+    border: 1px solid var(--rule-2);
+  }
+
+  .connector {
+    background: var(--rule-2);
+  }
+
+  /* Motion ------------------------------------------------------------ */
+  @media (prefers-reduced-motion: no-preference) {
+    .enter {
+      animation: enter-up 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  @layer components {
+    .journal {
+      grid-template-columns: 8.5rem minmax(0, 1fr);
+      column-gap: 3rem;
+      row-gap: 0;
+    }
+
+    .folio {
+      flex-direction: column;
+      gap: 0.4rem;
+      position: sticky;
+      top: 5.5rem;
+      align-self: start;
+    }
+
+    .page {
+      padding-inline: 2rem;
+    }
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    @layer components {
+      .reveal {
+        animation: reveal-up linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 50%;
+      }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .enter,
+  .reveal {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
